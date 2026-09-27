@@ -11,7 +11,9 @@ __pycache__/
 # PyInstaller / Build Artifacts
 build/
 dist/
+releases/
 *.spec
+*.zip
 
 # Test and scratch scripts
 test_*.py
