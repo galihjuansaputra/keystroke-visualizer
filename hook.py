@@ -76,6 +76,10 @@ user32.PeekMessageW.argtypes = [ctypes.POINTER(wintypes.MSG), wintypes.HWND, win
 user32.PostThreadMessageW.restype = wintypes.BOOL
 user32.PostThreadMessageW.argtypes = [wintypes.DWORD, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
 
+user32.AllowSetForegroundWindow.restype = wintypes.BOOL
+user32.AllowSetForegroundWindow.argtypes = [wintypes.DWORD]
+ASFW_ANY = 0xFFFFFFFF
+
 
 class InputHookThread(QThread):
     # Emits (tokens_list, category, count)
@@ -125,6 +129,10 @@ class InputHookThread(QThread):
                 
                 # Check modifiers
                 mods = self._get_modifiers()
+                
+                # Unlock foreground permissions when Win or special system keys are used
+                if mods.get("win") or vk in (0x5B, 0x5C, 0x09, 0x1B):
+                    user32.AllowSetForegroundWindow(ASFW_ANY)
                 
                 key_name = KeyFormatter.get_key_name(vk, scan, is_shift=mods["shift"])
                 tokens = KeyFormatter.format_event(mods, key_name)
@@ -239,7 +247,6 @@ class InputHookThread(QThread):
                 print(f"[OK] Mouse hook installed successfully: {self._hook_mouse}")
 
         # Standard Windows message loop
-
         msg = wintypes.MSG()
         while self._is_running:
             b_ret = user32.GetMessageW(ctypes.byref(msg), 0, 0, 0)
@@ -249,15 +256,21 @@ class InputHookThread(QThread):
             user32.DispatchMessageW(ctypes.byref(msg))
 
         # Cleanup hooks
+        self._cleanup_hooks()
+
+    def _cleanup_hooks(self):
         if self._hook_kb:
             user32.UnhookWindowsHookEx(self._hook_kb)
             self._hook_kb = None
         if self._hook_mouse:
             user32.UnhookWindowsHookEx(self._hook_mouse)
             self._hook_mouse = None
+        user32.AllowSetForegroundWindow(ASFW_ANY)
 
     def stop(self):
         self._is_running = False
+        self._cleanup_hooks()
         if self._thread_id:
             user32.PostThreadMessageW(self._thread_id, 0x0012, 0, 0)  # WM_QUIT
         self.wait(1000)
+

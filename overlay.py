@@ -24,6 +24,7 @@ WS_EX_NOACTIVATE = 0x08000000
 HWND_TOPMOST = -1
 SWP_NOACTIVATE = 0x0010
 SWP_SHOWWINDOW = 0x0040
+SWP_NOSENDCHANGING = 0x0400
 
 SIZES = {
     "Small": {
@@ -142,11 +143,12 @@ class OverlayWindow(QWidget):
         self._content_height = 52
         self._cur_size_cfg = SIZES["Medium"]
 
-        # Window Flags: Frameless, Always on Top, Tool Window (no taskbar button)
+        # Window Flags: Frameless, Always on Top, Tool Window, Never Accept Focus
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint |
             Qt.WindowType.WindowStaysOnTopHint |
-            Qt.WindowType.Tool
+            Qt.WindowType.Tool |
+            Qt.WindowType.WindowDoesNotAcceptFocus
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
@@ -352,13 +354,12 @@ class OverlayWindow(QWidget):
             target_y = geo.bottom() - h - 60
 
         hwnd = int(self.winId())
-        # Enforce exact size, position, and OS topmost z-order in a single atomic call
+        # Enforce exact size, position, and OS topmost z-order in a single atomic call without activation
         user32.SetWindowPos(
             hwnd, HWND_TOPMOST,
             int(target_x), int(target_y), int(w), int(h),
-            SWP_NOACTIVATE | SWP_SHOWWINDOW
+            SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOSENDCHANGING
         )
-        user32.BringWindowToTop(hwnd)
 
         # Enforce unclickable click-through at all times unless explicitly in reposition mode
         style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
