@@ -16,7 +16,7 @@ DEFAULT_CONFIG = {
     "size": "Medium",
     "capture_mouse": True,
     "show_repeat_count": True,
-    "click_through": False,
+    "click_through": True,
     "scale": 1.0
 }
 

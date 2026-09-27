@@ -169,9 +169,7 @@ class OverlayWindow(QWidget):
     def _init_win32_styles(self):
         hwnd = int(self.winId())
         style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
-        style |= WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE
-        if self.cfg.get("click_through", False):
-            style |= WS_EX_TRANSPARENT
+        style |= WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT
         user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
 
     # Opacity property for smooth Qt property animation
@@ -189,9 +187,8 @@ class OverlayWindow(QWidget):
 
     def _apply_click_through(self):
         hwnd = int(self.winId())
-        click_through = self.cfg.get("click_through", False)
         style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
-        if click_through:
+        if not self._reposition_mode:
             style |= WS_EX_TRANSPARENT
             self.setCursor(Qt.CursorShape.ArrowCursor)
         else:
@@ -363,6 +360,14 @@ class OverlayWindow(QWidget):
         )
         user32.BringWindowToTop(hwnd)
 
+        # Enforce unclickable click-through at all times unless explicitly in reposition mode
+        style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+        if self._reposition_mode:
+            style &= ~WS_EX_TRANSPARENT
+        else:
+            style |= WS_EX_TRANSPARENT
+        user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
+
         self.setGeometry(int(target_x), int(target_y), int(w), int(h))
         self.update()
         self.show()
@@ -457,15 +462,17 @@ class OverlayWindow(QWidget):
         self.fade_anim.stop()
         self.set_window_opacity(1.0)
 
+        hwnd = int(self.winId())
+        style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+
         if enabled:
-            hwnd = int(self.winId())
-            style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+            # Temporarily allow mouse interaction to drag to position
             style &= ~WS_EX_TRANSPARENT
             user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
             self.setCursor(Qt.CursorShape.SizeAllCursor)
-
-            self.display_event(["☩ Drag Me To Position"], "keyboard", 1)
+            self.display_event(["☩ Drag to Reposition"], "keyboard", 1)
         else:
+            # Immediately restore completely unclickable click-through
             self._apply_click_through()
             self._start_fade_out()
 
@@ -482,30 +489,34 @@ class OverlayWindow(QWidget):
         if self._opacity <= 0.05 and not self._reposition_mode:
             self.hide()
 
-    # Mouse drag repositioning when click_through is disabled or in reposition mode
+    # Mouse drag repositioning ONLY when explicitly opened via settings (reposition mode)
     def mousePressEvent(self, event):
-        can_drag = self._reposition_mode or not self.cfg.get("click_through", False)
-        if can_drag and event.button() == Qt.MouseButton.LeftButton:
+        if self._reposition_mode and event.button() == Qt.MouseButton.LeftButton:
             self._dragging = True
             self._drag_start_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
             event.accept()
+        else:
+            event.ignore()
 
     def mouseMoveEvent(self, event):
-        if self._dragging:
+        if self._reposition_mode and self._dragging:
             new_pos = event.globalPosition().toPoint() - self._drag_start_pos
             self.move(new_pos)
             event.accept()
+        else:
+            event.ignore()
 
     def mouseReleaseEvent(self, event):
-        if self._dragging:
+        if self._reposition_mode and self._dragging:
             self._dragging = False
             # Save new custom coordinates
             self.cfg.set("preset", "Custom")
             self.cfg.set("custom_x", self.x())
             self.cfg.set("custom_y", self.y())
 
-            if self._reposition_mode:
-                self._reposition_mode = False
-                self._apply_click_through()
-                self.display_event(["✓ Position Saved"], "keyboard", 1)
+            # Return immediately to unclickable and undraggable state
+            self.set_reposition_mode(False)
+            self.display_event(["✓ Position Saved"], "keyboard", 1)
             event.accept()
+        else:
+            event.ignore()

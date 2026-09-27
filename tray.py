@@ -107,15 +107,9 @@ class TrayManager:
             action.setChecked(p == current_preset)
             action.triggered.connect(lambda checked, preset=p: self._set_preset(preset))
 
-        # Explicit Drag to Reposition Action
-        drag_action = menu.addAction("☩ Move / Drag to Reposition...")
+        # Explicit Drag to Reposition Action (the only way to drag the visualizer)
+        drag_action = menu.addAction("☩ Adjust Manual Position (Drag to Move)...")
         drag_action.triggered.connect(self._start_reposition)
-
-        # Click-Through vs Draggable Toggle
-        click_thru_action = menu.addAction("🔒 Lock Position (Pass-Through Clicks)")
-        click_thru_action.setCheckable(True)
-        click_thru_action.setChecked(self.cfg.get("click_through", False))
-        click_thru_action.triggered.connect(self._toggle_click_through)
 
 
         # Theme Submenu
@@ -190,25 +184,14 @@ class TrayManager:
         self.overlay.set_reposition_mode(True)
 
     def _set_preset(self, preset):
-
+        if getattr(self.overlay, "_reposition_mode", False):
+            self.overlay.set_reposition_mode(False)
         self.cfg.set("preset", preset)
         self.cfg.set("custom_x", None)
         self.cfg.set("custom_y", None)
         self.overlay.update_position()
         self._build_menu()
         self.overlay.display_event(["Position", preset], "keyboard", 1)
-
-    def _toggle_click_through(self, checked):
-        self.cfg.set("click_through", checked)
-        self.overlay._apply_click_through()
-        self._build_menu()
-        status = "Locked (Click-Through)" if checked else "Unlocked (Draggable)"
-        self.tray.showMessage(
-            "Keystroke Visualizer",
-            f"Visualizer is now {status}",
-            QSystemTrayIcon.MessageIcon.Information,
-            2000
-        )
 
     def _set_theme(self, theme):
         self.cfg.set("theme", theme)
@@ -220,7 +203,6 @@ class TrayManager:
         self.cfg.set("size", size_name)
         self._build_menu()
         self.overlay.display_event(["Size", size_name], "keyboard", 1)
-
 
     def _set_duration(self, ms):
         self.cfg.set("display_duration_ms", ms)
@@ -238,12 +220,13 @@ class TrayManager:
     def _show_help(self):
         QMessageBox.information(
             None,
-            "Keystroke Visualizer - Drag & Reposition",
-            "To move the visualizer anywhere on screen:\n\n"
-            "1. Make sure 'Lock Position (Pass-Through Clicks)' is unchecked in the tray menu.\n"
-            "2. When any keystroke appears on screen, simply click and drag it to your desired spot.\n"
-            "3. It will automatically remember your custom position!\n"
-            "4. You can re-lock position at any time so your clicks pass through to background apps."
+            "Keystroke Visualizer - How to Reposition",
+            "The visualizer is completely unclickable and undraggable by default so it will never interfere with your clicks in other applications.\n\n"
+            "To adjust manual position:\n"
+            "1. Click '☩ Adjust Manual Position (Drag to Move)...' in this tray menu.\n"
+            "2. A draggable card will appear on your screen.\n"
+            "3. Click and drag it to your desired spot, then release the mouse.\n"
+            "4. Your new position is saved automatically, and the visualizer immediately returns to unclickable click-through mode!"
         )
 
     def _exit_app(self):
