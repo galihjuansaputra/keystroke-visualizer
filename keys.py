@@ -84,6 +84,12 @@ MODIFIER_KEYS = {
     0x5B, 0x5C,        # Win
 }
 
+NAV_AND_SPECIAL_KEYS = {
+    "Backspace", "Tab", "Enter", "Esc", "PageUp", "PageDown",
+    "End", "Home", "←", "↑", "→", "↓", "Insert", "Delete",
+    "Menu", "PrtScn", "Pause",
+} | {f"F{i}" for i in range(1, 25)}
+
 
 class KeyFormatter:
     @staticmethod
@@ -131,4 +137,34 @@ class KeyFormatter:
             tokens.append(main_key)
             
         return tokens
+
+    @staticmethod
+    def is_combination(modifiers: dict, vk_code: int, main_key: str, tokens: list[str]) -> bool:
+        """
+        Determines whether a key event represents a key combination / shortcut.
+        A combination involves:
+        - Non-modifier key with Ctrl, Alt, or Win (e.g. Ctrl+C, Alt+Tab, Win+R, Ctrl+Shift+P)
+        - Shift with navigation/function/control keys (e.g. Shift+Tab, Shift+Enter, Shift+F10)
+        - Excludes lone modifier presses (e.g. pressing just Shift, Ctrl, Alt, Win)
+        - Excludes regular single-key typing (e.g. 'A', '1', 'space')
+        """
+        # Lone modifiers are not combinations
+        if vk_code in MODIFIER_KEYS:
+            return False
+
+        has_ctrl = modifiers.get("ctrl", False)
+        has_alt = modifiers.get("alt", False)
+        has_win = modifiers.get("win", False)
+        has_shift = modifiers.get("shift", False)
+
+        # Primary modifier combos: Ctrl + Key, Alt + Key, Win + Key
+        if has_ctrl or has_alt or has_win:
+            return True
+
+        # Shift + Navigation / Function / Special keys (e.g. Shift+Tab, Shift+Delete, Shift+F5, Shift+Arrow)
+        if has_shift and main_key in NAV_AND_SPECIAL_KEYS:
+            return True
+
+        return False
+
 

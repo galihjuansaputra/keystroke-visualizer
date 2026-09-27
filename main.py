@@ -31,7 +31,11 @@ def main():
     overlay = OverlayWindow(cfg)
 
     # 3. Input Hook Thread (Keyboard + Mouse)
-    hook_thread = InputHookThread(capture_mouse=cfg.get("capture_mouse", True))
+    hook_thread = InputHookThread(
+        capture_keyboard=cfg.get("capture_keyboard", True),
+        only_combinations=cfg.get("only_combinations", False),
+        capture_mouse=cfg.get("capture_mouse", True)
+    )
     hook_thread.input_received.connect(overlay.display_event)
     hook_thread.start()
 

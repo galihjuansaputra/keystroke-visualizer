@@ -153,6 +153,20 @@ class TrayManager:
 
         menu.addSeparator()
 
+        # Keyboard Events Toggle
+        kb_action = menu.addAction("⌨️ Visualize Keyboard")
+        kb_action.setCheckable(True)
+        kb_enabled = self.cfg.get("capture_keyboard", True)
+        kb_action.setChecked(kb_enabled)
+        kb_action.triggered.connect(self._toggle_keyboard_capture)
+
+        # Combinations / Shortcuts Only Toggle
+        combo_action = menu.addAction("⚡ Only Show Shortcuts / Combinations")
+        combo_action.setCheckable(True)
+        combo_action.setChecked(self.cfg.get("only_combinations", False))
+        combo_action.setEnabled(kb_enabled)
+        combo_action.triggered.connect(self._toggle_only_combinations)
+
         # Mouse Events Toggle
         mouse_action = menu.addAction("🖱️ Visualize Mouse (Clicks & Scroll)")
         mouse_action.setCheckable(True)
@@ -208,10 +222,24 @@ class TrayManager:
         self.cfg.set("display_duration_ms", ms)
         self._build_menu()
 
+    def _toggle_keyboard_capture(self, checked):
+        self.cfg.set("capture_keyboard", checked)
+        self.hook_thread.capture_keyboard = checked
+        self._build_menu()
+        self.overlay.display_event(["Keyboard", "Enabled" if checked else "Disabled"], "keyboard", 1)
+
+    def _toggle_only_combinations(self, checked):
+        self.cfg.set("only_combinations", checked)
+        self.hook_thread.only_combinations = checked
+        self._build_menu()
+        mode_str = "Shortcuts Only" if checked else "All Keystrokes"
+        self.overlay.display_event(["Mode", mode_str], "keyboard", 1)
+
     def _toggle_mouse_capture(self, checked):
         self.cfg.set("capture_mouse", checked)
         self.hook_thread.capture_mouse = checked
         self._build_menu()
+        self.overlay.display_event(["Mouse", "Enabled" if checked else "Disabled"], "mouse", 1)
 
     def _toggle_repeat_count(self, checked):
         self.cfg.set("show_repeat_count", checked)

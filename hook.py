@@ -85,8 +85,10 @@ class InputHookThread(QThread):
     # e.g. (['A'], 'keyboard', 3)
     input_received = pyqtSignal(list, str, int)
 
-    def __init__(self, capture_mouse: bool = True):
+    def __init__(self, capture_keyboard: bool = True, only_combinations: bool = False, capture_mouse: bool = True):
         super().__init__()
+        self.capture_keyboard = capture_keyboard
+        self.only_combinations = only_combinations
         self.capture_mouse = capture_mouse
         self._is_running = True
         self._thread_id = None
@@ -115,7 +117,7 @@ class InputHookThread(QThread):
         }
 
     def _on_keyboard_event(self, nCode, wParam, lParam):
-        if nCode >= 0:
+        if nCode >= 0 and self.capture_keyboard:
             if wParam in (WM_KEYDOWN, WM_SYSKEYDOWN):
                 kb_struct = ctypes.cast(lParam, ctypes.POINTER(KBDLLHOOKSTRUCT)).contents
                 vk = kb_struct.vkCode
@@ -124,13 +126,14 @@ class InputHookThread(QThread):
                 # Check modifiers
                 mods = self._get_modifiers()
                 
-                # If key is pure modifier itself
-                is_modifier_only = vk in MODIFIER_KEYS
-                
                 key_name = KeyFormatter.get_key_name(vk, scan, is_shift=mods["shift"])
-                
                 tokens = KeyFormatter.format_event(mods, key_name)
+                
                 if tokens:
+                    # Filter for shortcuts/combinations if only_combinations is active
+                    if self.only_combinations and not KeyFormatter.is_combination(mods, vk, key_name, tokens):
+                        return user32.CallNextHookEx(self._hook_kb, nCode, wParam, lParam)
+
                     combo_str = "+".join(tokens)
                     now = time.time()
                     

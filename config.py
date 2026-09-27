@@ -14,6 +14,8 @@ DEFAULT_CONFIG = {
     "fade_duration_ms": 250,
     "theme": "Dark Modern Fluent",
     "size": "Medium",
+    "capture_keyboard": True,
+    "only_combinations": False,
     "capture_mouse": True,
     "show_repeat_count": True,
     "click_through": True,
