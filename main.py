@@ -11,6 +11,7 @@ from PyQt6.QtCore import Qt
 from config import ConfigManager
 from overlay import OverlayWindow
 from hook import InputHookThread
+from sound import SoundManager
 from tray import TrayManager
 
 
@@ -27,20 +28,24 @@ def main():
     # 1. Config Manager
     cfg = ConfigManager()
 
-    # 2. Overlay Window
+    # 2. Sound Effects Manager
+    sound_mgr = SoundManager(cfg)
+
+    # 3. Overlay Window
     overlay = OverlayWindow(cfg)
 
-    # 3. Input Hook Thread (Keyboard + Mouse)
+    # 4. Input Hook Thread (Keyboard + Mouse)
     hook_thread = InputHookThread(
         capture_keyboard=cfg.get("capture_keyboard", True),
         only_combinations=cfg.get("only_combinations", False),
         capture_mouse=cfg.get("capture_mouse", True)
     )
     hook_thread.input_received.connect(overlay.display_event)
+    hook_thread.audio_event.connect(sound_mgr.handle_audio_event)
     hook_thread.start()
 
-    # 4. System Tray Manager
-    tray_mgr = TrayManager(app, overlay, hook_thread, cfg)
+    # 5. System Tray Manager
+    tray_mgr = TrayManager(app, overlay, hook_thread, cfg, sound_mgr)
 
     # Clean shutdown on application exit
     def on_exit():

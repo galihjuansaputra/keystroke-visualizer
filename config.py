@@ -19,7 +19,15 @@ DEFAULT_CONFIG = {
     "capture_mouse": True,
     "show_repeat_count": True,
     "click_through": True,
-    "scale": 1.0
+    "scale": 1.0,
+    "sound_keyboard": True,
+    "sound_mouse_click": True,
+    "sound_mouse_scroll": True,
+    "sound_mouse": True,
+    "sound_profile": "Mechanical Switch",
+    "sound_volume_keyboard": 0.75,
+    "sound_volume_mouse": 0.50,
+    "sound_volume": 0.75
 }
 
 

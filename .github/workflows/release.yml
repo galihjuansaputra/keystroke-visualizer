@@ -31,7 +31,7 @@ jobs:
 
       - name: Build Standalone Executable
         run: |
-          pyinstaller --noconsole --onefile --clean --icon=app_icon.ico --name="KeystrokeVisualizer" main.py
+          pyinstaller --noconsole --onefile --clean --add-data "sounds;sounds" --add-data "checkmark.png;." --icon=app_icon.ico --name="KeystrokeVisualizer" main.py
 
       - name: Create ZIP Package
         shell: pwsh

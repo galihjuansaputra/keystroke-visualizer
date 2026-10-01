@@ -11,12 +11,12 @@ VK_MAP = {
     0x14: "CapsLock",
     0x5B: "Win",
     0x5C: "Win",
-    0xA0: "LShift",
-    0xA1: "RShift",
-    0xA2: "LCtrl",
-    0xA3: "RCtrl",
-    0xA4: "LAlt",
-    0xA5: "RAlt",
+    0xA0: "Shift",
+    0xA1: "Shift",
+    0xA2: "Ctrl",
+    0xA3: "Ctrl",
+    0xA4: "Alt",
+    0xA5: "Alt",
 
     # Navigation & Control
     0x08: "Backspace",
@@ -128,11 +128,21 @@ class KeyFormatter:
         if modifiers.get("win"):
             tokens.append("Win")
         
-        # If main_key is already one of the active modifiers, don't duplicate
-        # e.g. user just pressed or released a lone Shift/Ctrl/Alt/Win
-        if main_key in ("Ctrl", "Shift", "Alt", "Win"):
+        # Normalize modifier key names
+        norm_key = main_key
+        if main_key in ("LCtrl", "RCtrl", "Control", "LControl", "RControl"):
+            norm_key = "Ctrl"
+        elif main_key in ("LShift", "RShift"):
+            norm_key = "Shift"
+        elif main_key in ("LAlt", "RAlt"):
+            norm_key = "Alt"
+        elif main_key in ("LWin", "RWin"):
+            norm_key = "Win"
+
+        # If norm_key is one of the active modifiers, don't duplicate it
+        if norm_key in ("Ctrl", "Shift", "Alt", "Win"):
             if not tokens:
-                tokens.append(main_key)
+                tokens.append(norm_key)
         else:
             tokens.append(main_key)
             

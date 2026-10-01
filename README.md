@@ -18,30 +18,29 @@ A fast, lightweight, and modern Windows 11 Fluent on-screen visualizer for keyst
 
 - **⚡ Zero Latency**: Low-level Windows hooks (`WH_KEYBOARD_LL`, `WH_MOUSE_LL`) running on a dedicated thread.
 - **🎨 Windows 11 Fluent Acrylic**: Frosted glass effect with balanced padding, clean borders, and smooth rounded corners.
-- **🎯 Clean Keystrokes & Shortcuts**: Discrete key chiclets (1:1 square single keys) with combo support (`Ctrl + C`, `Win + D`, etc.) and repeat counters (`×2`, `×3`).
+- **🔊 Authentic Mechanical Sound Effects**: High-fidelity zero-latency audio feedback for typing (with heavier acoustic response for Space/Enter/modifiers), mechanical mouse clicks (down & up micro-switch clicks), and rotary scroll wheel notch ticks.
+- **🎚️ Independent Audio Controls**: 3 discrete toggles (Keyboard, Mouse Clicks, Mouse Scroll) and independent volume sliders for keyboard and mouse audio.
 - **⚡ Combination-Only Mode**: Option to display only shortcuts and key combinations (ignoring everyday typing).
-- **⌨️ / 🖱️ Independent Toggles**: Freely enable/disable keyboard capture, combination filtering, and mouse event tracking.
+- **⌨️ / 🖱️ Independent Toggles**: Freely enable/disable keyboard capture, combination filtering, mouse tracking, and sound effects.
 - **🔒 Non-Intrusive & Click-Through**: Always on top of games and fullscreen apps without stealing focus or blocking clicks.
 - **📍 Free Repositioning**: Choose from 5 screen presets or drag the visualizer anywhere.
-- **🎨 Themes & Sizes**: Built-in themes (*Dark Modern*, *Light Modern*, *Cyberpunk*, *Minimal*) with Small, Medium, and Large scaling.
+- **⚙️ Unified Settings Window**: Convenient, all-in-one modern settings window to configure display styles, key capture, and audio feedback in one place.
 
 ---
 
-## ⚙️ System Tray Controls
+## ⚙️ Settings & System Tray Controls
 
-Right-click the ⌨️ icon in the system tray to adjust settings:
+- **Left-Click or Double-Click** the ⌨️ tray icon (or right-click and select **⚙️ Settings...**) to open the unified settings window:
+  - **🎨 Appearance & Display**: Theme style, size scaling, screen position presets, manual drag repositioning, display duration, and repeat multiplier badge.
+  - **⌨️ Input Detection**: Toggle keyboard capture, combination/shortcut-only filter, and mouse tracking.
+  - **🔊 Audio Sound Effects**: Toggle typing & click audio, choose switch profiles (*Mechanical Switch*, *Typewriter*, *Deep Thock*, *Crisp Modern*, *Bubble Pop*), and adjust volume slider.
 
-| Option | Description |
-| :--- | :--- |
-| **✨ Preview Test** | Test the overlay appearance immediately |
-| **📍 Presets** | Bottom-Center, Bottom-Left, Bottom-Right, Top-Center, Top-Right |
-| **☩ Move / Drag** | Unlock overlay to drag it anywhere across multiple monitors |
-| **🎨 Themes & Size** | Switch theme styles and scale (Small / Medium / Large) |
-| **⏱️ Display Duration** | Fast (0.8s), Normal (1.2s), Relaxed (2.0s), or Long (3.0s) |
-| **⌨️ Visualize Keyboard** | Enable or disable keyboard visualization |
-| **⚡ Only Shortcuts / Combos** | Filter display to only show key combinations (e.g. `Ctrl+C`, `Alt+Tab`) |
-| **🖱️ Visualize Mouse** | Toggle mouse button tracking (clicks and scroll directions) |
-| **🔢 Show Multiplier** | Toggle repeat badges (e.g. `×2`, `×3`) |
+- **Right-Click Menu**:
+  - **⚙️ Settings...**: Opens the all-in-one settings window.
+  - **✨ Preview Test Keystroke**: Displays a live preview on screen.
+  - **☩ Adjust Manual Position...**: Draggable overlay card to place anywhere on screen.
+  - **💡 How to Reposition...**: Helpful repositioning instructions.
+  - **❌ Exit**: Cleanly shuts down the visualizer.
 
 ---
 

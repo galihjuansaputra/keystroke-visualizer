@@ -202,6 +202,9 @@ class OverlayWindow(QWidget):
         """
         Receives key/mouse event and computes exact geometry with zero overlap.
         """
+        if not tokens or category == "mouse_release":
+            return
+
         self.fade_anim.stop()
         self.set_window_opacity(1.0)
 
