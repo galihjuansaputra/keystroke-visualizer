@@ -31,7 +31,32 @@ DEFAULT_CONFIG = {
 }
 
 
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
+def get_config_path():
+    """
+    Returns persistent config.json path.
+    For portable frozen exe: saves alongside the exe in the same directory (or %APPDATA% fallback).
+    For source execution: saves in the project root directory.
+    """
+    if getattr(sys, "frozen", False):
+        exe_dir = os.path.dirname(sys.executable)
+        candidate = os.path.join(exe_dir, "config.json")
+        try:
+            test_file = os.path.join(exe_dir, ".kv_write_test")
+            with open(test_file, "w") as f:
+                f.write("1")
+            if os.path.exists(test_file):
+                os.remove(test_file)
+            return candidate
+        except Exception:
+            appdata = os.environ.get("APPDATA", os.path.expanduser("~"))
+            target_dir = os.path.join(appdata, "KeystrokeVisualizer")
+            os.makedirs(target_dir, exist_ok=True)
+            return os.path.join(target_dir, "config.json")
+    else:
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
+
+
+CONFIG_FILE = get_config_path()
 
 
 class ConfigManager:
